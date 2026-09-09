@@ -1,14 +1,7 @@
-FROM eclipse-temurin:17-jdk AS build
+FROM eclipse-temurin:17-jdk
+RUN apt-get update && apt-get install -y maven && rm -rf /var/lib/apt/lists/*
 WORKDIR /app
-COPY backend/pom.xml .
-COPY backend/mvnw .
-COPY backend/.mvn .mvn
-RUN chmod +x mvnw
-COPY backend/src src
-RUN ./mvnw clean package -DskipTests
-
-FROM eclipse-temurin:17-jre
-WORKDIR /app
-COPY --from=build /app/backend/target/*.jar app.jar
+COPY backend/ .
+RUN mvn clean package -DskipTests
 EXPOSE 8080
-CMD ["java", "-jar", "app.jar"]
+CMD ["java", "-jar", "target/smart-library-backend-1.0.0.jar"]
