@@ -57,7 +57,8 @@ public class SecurityConfig {
             "http://localhost:3000",
             "http://localhost:8080",
             "https://smart-library-frontend.vercel.app",
-            "https://smart-library-fq4q.onrender.com"
+            "https://smart-library-fq4q.onrender.com",
+            "https://frontend-1k3daforw-pushpa13.vercel.app"
         ));
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("*"));
