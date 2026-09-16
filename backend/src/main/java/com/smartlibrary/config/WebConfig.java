@@ -14,11 +14,10 @@ public class WebConfig {
             @Override
             public void addCorsMappings(CorsRegistry registry) {
                 registry.addMapping("/**")
-                        .allowedOrigins(
+                        .allowedOriginPatterns(
                             "http://localhost:3000",
-                            "https://smart-library-frontend.vercel.app",
-                            "https://smart-library-fq4q.onrender.com",
-                            "https://frontend-1k3daforw-pushpa13.vercel.app"
+                            "https://*.vercel.app",
+                            "https://smart-library-fq4q.onrender.com"
                         )
                         .allowedMethods("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS")
                         .allowedHeaders("*")
