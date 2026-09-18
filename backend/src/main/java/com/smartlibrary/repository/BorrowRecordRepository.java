@@ -16,6 +16,9 @@ public interface BorrowRecordRepository extends JpaRepository<BorrowRecord, Long
     @Query("SELECT br FROM BorrowRecord br WHERE br.student.id = :studentId ORDER BY br.borrowDate DESC")
     List<BorrowRecord> findByStudentIdOrderByBorrowDateDesc(@Param("studentId") Long studentId);
 
+    @Query("SELECT DISTINCT br FROM BorrowRecord br JOIN FETCH br.copy c JOIN FETCH c.book b WHERE br.student.id = :studentId ORDER BY br.borrowDate DESC")
+    List<BorrowRecord> findHistoryWithBookByStudentId(@Param("studentId") Long studentId);
+
     @Query("SELECT br FROM BorrowRecord br WHERE br.copy.id = :copyId AND br.status = 'BORROWED'")
     Optional<BorrowRecord> findActiveBorrowByCopyId(@Param("copyId") Long copyId);
 

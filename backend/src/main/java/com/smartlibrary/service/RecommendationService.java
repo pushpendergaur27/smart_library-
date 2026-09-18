@@ -3,13 +3,14 @@ package com.smartlibrary.service;
 import com.smartlibrary.dto.BookResponse;
 import com.smartlibrary.dto.RecommendationResponse;
 import com.smartlibrary.entity.BorrowRecord;
-import com.smartlibrary.entity.BorrowRecord.BorrowStatus;
 import com.smartlibrary.repository.BookRepository;
 import com.smartlibrary.repository.BorrowRecordRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
 import java.util.stream.Collectors;
+
 @Service
 public class RecommendationService {
 
@@ -25,8 +26,9 @@ public class RecommendationService {
         this.bookService = bookService;
     }
 
+    @Transactional(readOnly = true)
     public List<RecommendationResponse> getRecommendations(Long studentId) {
-        List<BorrowRecord> history = borrowRecordRepository.findByStudentIdOrderByBorrowDateDesc(studentId);
+        List<BorrowRecord> history = borrowRecordRepository.findHistoryWithBookByStudentId(studentId);
 
         Set<Long> borrowedBookIds = history.stream()
                 .map(br -> br.getCopy().getBook().getId())
@@ -113,17 +115,6 @@ public class RecommendationService {
         if (!exploreBooks.isEmpty()) {
             recommendations.add(new RecommendationResponse(
                     "Explore something different", exploreBooks));
-        }
-
-        List<BookResponse> popularUnread = bookRepository.findAll().stream()
-                .filter(b -> !borrowedBookIds.contains(b.getId()))
-                .limit(6)
-                .map(b -> bookService.getBookByIdSafe(b.getId()))
-                .filter(Objects::nonNull)
-                .collect(Collectors.toList());
-        if (!popularUnread.isEmpty()) {
-            recommendations.add(new RecommendationResponse(
-                    "Most borrowed books in the library", popularUnread));
         }
 
         return recommendations;
