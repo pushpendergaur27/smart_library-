@@ -1,0 +1,14 @@
+name: Keep Server Alive
+
+on:
+  schedule:
+    - cron: '*/10 * * * *'
+  workflow_dispatch:
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping server
+        run: |
+          curl -s -o /dev/null -w "%{http_code}" https://smart-library-fq4q.onrender.com/api/books || true
