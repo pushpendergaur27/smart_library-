@@ -83,6 +83,10 @@ public class BookService {
         bookRepository.delete(book);
     }
 
+    public BookResponse getBookByIdSafe(Long id) {
+        return bookRepository.findById(id).map(this::toResponse).orElse(null);
+    }
+
     private BookResponse toResponse(Book book) {
         BookResponse response = new BookResponse();
         response.setId(book.getId());
