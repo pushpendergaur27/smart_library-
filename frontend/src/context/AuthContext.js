@@ -12,7 +12,10 @@ export const useAuth = () => {
 };
 
 export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(null);
+  const [user, setUser] = useState(() => {
+    const saved = localStorage.getItem('user');
+    return saved ? JSON.parse(saved) : null;
+  });
   const [token, setToken] = useState(localStorage.getItem('jwtToken'));
   const [loading, setLoading] = useState(true);
 
@@ -21,9 +24,21 @@ export const AuthProvider = ({ children }) => {
       try {
         const userData = await authService.getMe();
         setUser(userData);
+        localStorage.setItem('user', JSON.stringify(userData));
       } catch (error) {
         console.error('Failed to load user:', error);
-        logout();
+        if (error.response?.status === 401) {
+          localStorage.removeItem('jwtToken');
+          localStorage.removeItem('userRole');
+          localStorage.removeItem('user');
+          setToken(null);
+          setUser(null);
+        } else if (!user) {
+          const saved = localStorage.getItem('user');
+          if (saved) {
+            setUser(JSON.parse(saved));
+          }
+        }
       }
     }
     setLoading(false);
@@ -40,6 +55,7 @@ export const AuthProvider = ({ children }) => {
     setToken(newToken);
     const userData = response.user || response;
     setUser(userData);
+    localStorage.setItem('user', JSON.stringify(userData));
     return userData;
   };
 
@@ -51,6 +67,7 @@ export const AuthProvider = ({ children }) => {
   const logout = () => {
     localStorage.removeItem('jwtToken');
     localStorage.removeItem('userRole');
+    localStorage.removeItem('user');
     setToken(null);
     setUser(null);
   };
