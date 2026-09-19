@@ -10,6 +10,10 @@ import java.util.Optional;
 
 public interface BookCopyRepository extends JpaRepository<BookCopy, Long> {
     Optional<BookCopy> findByLibraryBarcode(String libraryBarcode);
+
+    @Query("SELECT c FROM BookCopy c JOIN FETCH c.book WHERE c.libraryBarcode = :barcode")
+    Optional<BookCopy> findByLibraryBarcodeWithBook(@Param("barcode") String libraryBarcode);
+
     boolean existsByLibraryBarcode(String libraryBarcode);
 
     List<BookCopy> findByBookId(Long bookId);

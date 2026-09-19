@@ -32,7 +32,7 @@ public class LibrarianReturnController {
     @PostMapping("/return")
     public ResponseEntity<Map<String, Object>> returnBook(@Valid @RequestBody ReturnRequest request) {
         BorrowRecordResponse record = borrowService.returnBook(request.getBarcode(), null);
-        BookCopy copy = bookCopyRepository.findByLibraryBarcode(request.getBarcode()).orElse(null);
+        BookCopy copy = bookCopyRepository.findByLibraryBarcodeWithBook(request.getBarcode()).orElse(null);
         if (copy != null) {
             reservationService.processReservationQueue(copy.getBook().getId(), copy);
         }

@@ -39,7 +39,7 @@ public class BorrowService {
 
     @Transactional
     public BorrowRecordResponse borrowBook(String barcode, Long studentId) {
-        BookCopy copy = bookCopyRepository.findByLibraryBarcode(barcode)
+        BookCopy copy = bookCopyRepository.findByLibraryBarcodeWithBook(barcode)
                 .orElseThrow(() -> new ResourceNotFoundException("Book copy not found with barcode: " + barcode));
         if (copy.getStatus() != CopyStatus.AVAILABLE) {
             throw new BadRequestException("This copy is not available for borrowing. Status: " + copy.getStatus());
@@ -78,7 +78,7 @@ public class BorrowService {
 
     @Transactional
     public BorrowRecordResponse returnBook(String barcode, Long librarianId) {
-        BookCopy copy = bookCopyRepository.findByLibraryBarcode(barcode)
+        BookCopy copy = bookCopyRepository.findByLibraryBarcodeWithBook(barcode)
                 .orElseThrow(() -> new ResourceNotFoundException("Book copy not found with barcode: " + barcode));
         BorrowRecord record = borrowRecordRepository.findActiveBorrowByCopyId(copy.getId())
                 .orElseThrow(() -> new BadRequestException("No active borrow record found for this copy."));

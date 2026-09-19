@@ -45,7 +45,7 @@ public class StudentBorrowController {
     public ResponseEntity<Map<String, Object>> borrowBook(@Valid @RequestBody BorrowRequest request) {
         Long studentId = getCurrentStudentId();
         BorrowRecordResponse record = borrowService.borrowBook(request.getBarcode(), studentId);
-        BookCopy copy = bookCopyRepository.findByLibraryBarcode(request.getBarcode()).orElse(null);
+        BookCopy copy = bookCopyRepository.findByLibraryBarcodeWithBook(request.getBarcode()).orElse(null);
         if (copy != null) {
             reservationService.processReservationQueue(copy.getBook().getId(), copy);
         }
