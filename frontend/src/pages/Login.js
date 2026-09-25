@@ -26,8 +26,11 @@ const Login = () => {
         navigate('/student/dashboard');
       }
     } catch (err) {
-      const msg = err.response?.data?.message || err.response?.data?.error || 'Login failed. Please check your credentials.';
-      setError(msg);
+      if (!err.response) {
+        setError('Cannot reach the server. It may be waking up — please wait 30 seconds and try again.');
+      } else {
+        setError(err.response?.data?.message || err.response?.data?.error || 'Login failed. Please check your credentials.');
+      }
     } finally {
       setLoading(false);
     }

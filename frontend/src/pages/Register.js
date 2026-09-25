@@ -43,8 +43,11 @@ const Register = () => {
       await register(submitData);
       navigate('/login', { state: { message: 'Registration successful! Please login.' } });
     } catch (err) {
-      const msg = err.response?.data?.message || err.response?.data?.error || 'Registration failed. Please try again.';
-      setError(msg);
+      if (!err.response) {
+        setError('Cannot reach the server. It may be waking up — please wait 30 seconds and try again.');
+      } else {
+        setError(err.response?.data?.message || err.response?.data?.error || 'Registration failed. Please try again.');
+      }
     } finally {
       setLoading(false);
     }
