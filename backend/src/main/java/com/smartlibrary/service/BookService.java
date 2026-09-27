@@ -39,7 +39,14 @@ public class BookService {
     }
 
     public List<BookResponse> searchAdvanced(String title, String author, String isbn, String genre) {
-        List<Book> results = bookRepository.searchAdvanced(title, author, isbn, genre);
+        String t = title == null ? "" : title.trim();
+        String a = author == null ? "" : author.trim();
+        String i = isbn == null ? "" : isbn.trim();
+        String g = genre == null ? "" : genre.trim();
+        if (t.isEmpty() && a.isEmpty() && i.isEmpty() && g.isEmpty()) {
+            return getAllBooks();
+        }
+        List<Book> results = bookRepository.searchAdvanced(t, a, i, g);
         return results.stream().map(this::toResponse).collect(Collectors.toList());
     }
 
