@@ -2,6 +2,16 @@
 
 A full-stack library management system built with Spring Boot + React.
 
+## 🌐 Live Deployment
+
+| Service | URL |
+|---------|-----|
+| **Frontend (React)** | https://frontend-three-sandy-mke7k8msn1.vercel.app |
+| **Backend API (Spring Boot)** | https://smart-library-fq4q.onrender.com/api |
+| **Database** | Supabase PostgreSQL (Render env vars) |
+
+> **Note:** The backend runs on Render's free tier — the first request after ~15 min of inactivity may take up to 60 seconds while the server wakes up.
+
 ## Prerequisites
 
 1. **Java 17+** - [Download](https://adoptium.net/)
