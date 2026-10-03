@@ -5,4 +5,9 @@ export const externalBookService = {
     const response = await api.get('/external-books/search', { params: { q, limit } });
     return response.data;
   },
+
+  facts: async (isbn) => {
+    const response = await api.get('/external-books/facts', { params: { isbn } });
+    return response.data;
+  },
 };

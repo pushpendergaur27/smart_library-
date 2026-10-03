@@ -63,6 +63,7 @@ public class BookService {
         book.setLanguage(request.getLanguage());
         book.setEdition(request.getEdition());
         book.setPublicationYear(request.getPublicationYear());
+        book.setRent(request.getRent());
         book = bookRepository.save(book);
         return toResponse(book);
     }
@@ -80,6 +81,7 @@ public class BookService {
         book.setLanguage(request.getLanguage());
         book.setEdition(request.getEdition());
         book.setPublicationYear(request.getPublicationYear());
+        book.setRent(request.getRent());
         book = bookRepository.save(book);
         return toResponse(book);
     }
@@ -107,6 +109,7 @@ public class BookService {
         response.setLanguage(book.getLanguage());
         response.setEdition(book.getEdition());
         response.setPublicationYear(book.getPublicationYear());
+        response.setRent(book.getRent());
         response.setCreatedAt(book.getCreatedAt());
 
         long total = bookCopyRepository.countByBookId(book.getId());

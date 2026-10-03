@@ -16,6 +16,7 @@ public class BookRequest {
     private String language;
     private String edition;
     private Integer publicationYear;
+    private Double rent;
 
     public String getIsbn() { return isbn; }
     public void setIsbn(String isbn) { this.isbn = isbn; }
@@ -37,4 +38,6 @@ public class BookRequest {
     public void setEdition(String edition) { this.edition = edition; }
     public Integer getPublicationYear() { return publicationYear; }
     public void setPublicationYear(Integer publicationYear) { this.publicationYear = publicationYear; }
+    public Double getRent() { return rent; }
+    public void setRent(Double rent) { this.rent = rent; }
 }

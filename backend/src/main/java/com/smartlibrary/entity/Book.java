@@ -32,6 +32,7 @@ public class Book {
     private String language;
     private String edition;
     private Integer publicationYear;
+    private Double rent;
 
     @Column(updatable = false)
     private LocalDateTime createdAt;
@@ -69,6 +70,8 @@ public class Book {
     public void setEdition(String edition) { this.edition = edition; }
     public Integer getPublicationYear() { return publicationYear; }
     public void setPublicationYear(Integer publicationYear) { this.publicationYear = publicationYear; }
+    public Double getRent() { return rent; }
+    public void setRent(Double rent) { this.rent = rent; }
     public LocalDateTime getCreatedAt() { return createdAt; }
     public List<BookCopy> getCopies() { return copies; }
     public void setCopies(List<BookCopy> copies) { this.copies = copies; }

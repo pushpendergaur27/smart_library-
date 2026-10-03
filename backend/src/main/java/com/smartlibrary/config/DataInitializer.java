@@ -59,6 +59,23 @@ public class DataInitializer implements CommandLineRunner {
         if (bookRepository.count() == 0) {
             createSampleBooks();
         }
+
+        backfillRent();
+    }
+
+    private void backfillRent() {
+        List<Book> books = bookRepository.findAll();
+        boolean changed = false;
+        for (Book book : books) {
+            if (book.getRent() == null) {
+                book.setRent(10.0);
+                changed = true;
+            }
+        }
+        if (changed) {
+            bookRepository.saveAll(books);
+            log.info("Default rent (10) set for books added before the rent feature");
+        }
     }
 
     private void createSampleBooks() {
@@ -146,6 +163,7 @@ public class DataInitializer implements CommandLineRunner {
             book.setLanguage(bd.language);
             book.setEdition(bd.edition);
             book.setPublicationYear(bd.publicationYear);
+            book.setRent(10.0);
             book = bookRepository.save(book);
 
             for (int i = 1; i <= 3; i++) {

@@ -17,6 +17,7 @@ const AddBookPage = () => {
     edition: '',
     language: 'English',
     publicationYear: '',
+    rent: '',
     description: '',
     coverImage: '',
   });
@@ -277,7 +278,7 @@ const AddBookPage = () => {
             </Row>
 
             <Row>
-              <Col md={6}>
+              <Col md={4}>
                 <Form.Group className="mb-3">
                   <Form.Label>Publication Year</Form.Label>
                   <Form.Control
@@ -291,7 +292,21 @@ const AddBookPage = () => {
                   />
                 </Form.Group>
               </Col>
-              <Col md={6}>
+              <Col md={4}>
+                <Form.Group className="mb-3">
+                  <Form.Label>Rent (₹)</Form.Label>
+                  <Form.Control
+                    type="number"
+                    name="rent"
+                    value={formData.rent}
+                    onChange={handleChange}
+                    placeholder="e.g., 10"
+                    min="0"
+                    step="0.5"
+                  />
+                </Form.Group>
+              </Col>
+              <Col md={4}>
                 <Form.Group className="mb-3">
                   <Form.Label>Cover Image URL</Form.Label>
                   <Form.Control

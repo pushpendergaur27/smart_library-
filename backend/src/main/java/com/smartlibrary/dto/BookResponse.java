@@ -15,6 +15,7 @@ public class BookResponse {
     private String language;
     private String edition;
     private Integer publicationYear;
+    private Double rent;
     private LocalDateTime createdAt;
     private int totalCopies;
     private int availableCopies;
@@ -42,6 +43,8 @@ public class BookResponse {
     public void setEdition(String edition) { this.edition = edition; }
     public Integer getPublicationYear() { return publicationYear; }
     public void setPublicationYear(Integer publicationYear) { this.publicationYear = publicationYear; }
+    public Double getRent() { return rent; }
+    public void setRent(Double rent) { this.rent = rent; }
     public LocalDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
     public int getTotalCopies() { return totalCopies; }

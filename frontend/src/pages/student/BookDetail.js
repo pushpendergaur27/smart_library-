@@ -4,11 +4,28 @@ import { Container, Row, Col, Card, Badge, Button, Table, Form, Alert } from 're
 import { bookService } from '../../services/bookService';
 import { borrowService } from '../../services/borrowService';
 import { reservationService } from '../../services/reservationService';
+import { externalBookService } from '../../services/externalBookService';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import EmptyState from '../../components/EmptyState';
 import AlertMessage from '../../components/AlertMessage';
 import { getStatusBadgeClass } from '../../utils/helpers';
-import { FiArrowLeft, FiMapPin, FiCheckCircle, FiXCircle } from 'react-icons/fi';
+import { FiArrowLeft, FiMapPin, FiCheckCircle, FiXCircle, FiChevronDown, FiChevronUp } from 'react-icons/fi';
+
+const openLibraryCover = (isbn) => {
+  if (!isbn) return null;
+  const clean = String(isbn).replace(/[^0-9Xx]/g, '');
+  if (clean.length < 10) return null;
+  return `https://covers.openlibrary.org/b/isbn/${clean}-M.jpg?default=false`;
+};
+
+const Stars = ({ rating }) => (
+  <span>
+    {[1, 2, 3, 4, 5].map((i) => (
+      <span key={i} style={{ color: rating >= i - 0.25 ? '#f5a623' : '#dee2e6' }}>★</span>
+    ))}
+    <span className="text-muted ms-1">{rating.toFixed(1)}</span>
+  </span>
+);
 
 const StudentBookDetail = () => {
   const { id } = useParams();
@@ -21,6 +38,9 @@ const StudentBookDetail = () => {
   const [borrowResult, setBorrowResult] = useState(null);
   const [reserving, setReserving] = useState(false);
   const [reserveMsg, setReserveMsg] = useState({ type: '', text: '' });
+  const [facts, setFacts] = useState(null);
+  const [showLocation, setShowLocation] = useState(false);
+  const [coverFailed, setCoverFailed] = useState(false);
 
   useEffect(() => {
     const fetchBook = async () => {
@@ -35,6 +55,14 @@ const StudentBookDetail = () => {
     };
     fetchBook();
   }, [id]);
+
+  useEffect(() => {
+    if (book?.isbn) {
+      externalBookService.facts(book.isbn)
+        .then(setFacts)
+        .catch(() => setFacts(null));
+    }
+  }, [book?.isbn]);
 
   const handleBorrow = async (e) => {
     e.preventDefault();
@@ -78,6 +106,26 @@ const StudentBookDetail = () => {
   const totalCopies = book.totalCopies ?? 0;
   const copies = book.copies || [];
   const availableCopiesList = copies.filter((c) => c.status === 'AVAILABLE');
+  const cover = !coverFailed && (book.coverImage || book.imageUrl || openLibraryCover(book.isbn));
+  const rent = book.rent != null && Number(book.rent) > 0 ? `₹${Number(book.rent).toLocaleString()}` : 'Free';
+
+  const detailRows = [
+    ['ISBN', <code key="isbn">{book.isbn}</code>],
+    ['Publisher', book.publisher || 'N/A'],
+    ['Edition', book.edition || 'N/A'],
+    ['Language', book.language || 'English'],
+    ['Year', book.publicationYear || 'N/A'],
+    ['Pages', facts?.pageCount ? `${facts.pageCount} pages` : 'N/A'],
+    ['Rent', <span key="rent" className="text-success fw-bold">{rent}</span>],
+    ['Rating', facts?.rating != null
+      ? <span key="rating"><Stars rating={facts.rating} /> <small className="text-muted">({facts.ratingsCount || 0} ratings)</small></span>
+      : 'N/A'],
+    ['Availability', (
+      <span key="avail" className={availableCopies > 0 ? 'text-success fw-bold' : 'text-danger fw-bold'}>
+        {availableCopies} / {totalCopies} available
+      </span>
+    )],
+  ];
 
   return (
     <Container fluid>
@@ -86,18 +134,22 @@ const StudentBookDetail = () => {
       </Button>
 
       <Row>
-        <Col lg={4} className="mb-4">
+        <Col lg={5} className="mb-4">
           <Card className="border-0 shadow-sm">
-            {book.coverImage ? (
+            {cover ? (
               <img
-                src={book.coverImage}
-                alt={book.title}
-                className="card-img-top"
-                style={{ maxHeight: '400px', objectFit: 'cover' }}
+                src={cover}
+                alt={book.title || 'Book cover'}
+                onError={() => setCoverFailed(true)}
+                className="card-img-top bg-light"
+                style={{ height: '420px', objectFit: 'contain', padding: '16px' }}
               />
             ) : (
-              <div className="bg-light d-flex align-items-center justify-content-center" style={{ height: '300px' }}>
-                <span style={{ fontSize: '4rem' }}>📚</span>
+              <div className="bg-light d-flex align-items-center justify-content-center" style={{ height: '420px' }}>
+                <div className="text-center">
+                  <span style={{ fontSize: '4rem' }}>📚</span>
+                  <small className="d-block text-muted mt-2">No Cover</small>
+                </div>
               </div>
             )}
           </Card>
@@ -156,7 +208,7 @@ const StudentBookDetail = () => {
           )}
         </Col>
 
-        <Col lg={8}>
+        <Col lg={7}>
           <Card className="border-0 shadow-sm mb-4">
             <Card.Body>
               <div className="d-flex justify-content-between align-items-start mb-3">
@@ -167,28 +219,19 @@ const StudentBookDetail = () => {
                 {book.genre && <Badge bg="primary">{book.genre}</Badge>}
               </div>
 
-              <Row className="mb-3">
-                <Col sm={6}>
-                  <p><strong>ISBN:</strong> <code>{book.isbn}</code></p>
-                  <p><strong>Publisher:</strong> {book.publisher || 'N/A'}</p>
-                  <p><strong>Edition:</strong> {book.edition || 'N/A'}</p>
-                </Col>
-                <Col sm={6}>
-                  <p><strong>Language:</strong> {book.language || 'English'}</p>
-                  <p><strong>Year:</strong> {book.publicationYear || 'N/A'}</p>
-                  <p>
-                    <strong>Availability:</strong>{' '}
-                    <span className={availableCopies > 0 ? 'text-success fw-bold' : 'text-danger fw-bold'}>
-                      {availableCopies} / {totalCopies} available
-                    </span>
-                  </p>
-                </Col>
-              </Row>
+              <div className="mb-3">
+                {detailRows.map(([label, value]) => (
+                  <div key={label} className="d-flex py-2 border-bottom" style={{ gap: '16px' }}>
+                    <div style={{ width: '130px', minWidth: '130px' }} className="fw-bold">{label}:</div>
+                    <div style={{ wordBreak: 'break-word' }}>{value}</div>
+                  </div>
+                ))}
+              </div>
 
               {book.description && (
-                <div className="mb-3">
+                <div>
                   <h6 className="fw-bold">Description</h6>
-                  <p className="text-muted">{book.description}</p>
+                  <p className="text-muted mb-0">{book.description}</p>
                 </div>
               )}
             </Card.Body>
@@ -196,41 +239,53 @@ const StudentBookDetail = () => {
 
           {availableCopiesList.length > 0 && (
             <Card className="border-0 shadow-sm">
-              <Card.Header className="bg-white border-bottom">
-                <h5 className="mb-0 fw-bold"><FiMapPin className="me-2" />Available Copies - Enter Barcode Below</h5>
-              </Card.Header>
               <Card.Body>
-                <Table responsive hover>
-                  <thead>
-                    <tr>
-                      <th>Barcode</th>
-                      <th>Floor</th>
-                      <th>Section</th>
-                      <th>Shelf</th>
-                      <th>Rack</th>
-                      <th>Row</th>
-                      <th>Status</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {availableCopiesList.map((copy) => (
-                      <tr key={copy.id}>
-                        <td><code>{copy.barcode || copy.libraryBarcode}</code></td>
-                        <td>{copy.floor || 'N/A'}</td>
-                        <td>{copy.section || 'N/A'}</td>
-                        <td>{copy.shelf || 'N/A'}</td>
-                        <td>{copy.rack || 'N/A'}</td>
-                        <td>{copy.rowNumber || 'N/A'}</td>
-                        <td>
-                          <Badge className={getStatusBadgeClass(copy.status)}>
-                            {copy.status}
-                          </Badge>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </Table>
-                <p className="text-muted small mt-2">Copy the barcode from the table above into the borrow form on the left.</p>
+                <Button
+                  variant="outline-primary"
+                  className="w-100 d-flex align-items-center justify-content-center"
+                  onClick={() => setShowLocation((v) => !v)}
+                  aria-expanded={showLocation}
+                >
+                  <FiMapPin className="me-2" />
+                  {showLocation ? 'Hide Location' : 'Show Location'} ({availableCopiesList.length} {availableCopiesList.length === 1 ? 'copy' : 'copies'})
+                  {showLocation ? <FiChevronUp className="ms-2" /> : <FiChevronDown className="ms-2" />}
+                </Button>
+
+                {showLocation && (
+                  <div className="mt-3">
+                    <Table responsive hover>
+                      <thead>
+                        <tr>
+                          <th>Barcode</th>
+                          <th>Floor</th>
+                          <th>Section</th>
+                          <th>Shelf</th>
+                          <th>Rack</th>
+                          <th>Row</th>
+                          <th>Status</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {availableCopiesList.map((copy) => (
+                          <tr key={copy.id}>
+                            <td><code>{copy.barcode || copy.libraryBarcode}</code></td>
+                            <td>{copy.floor || 'N/A'}</td>
+                            <td>{copy.section || 'N/A'}</td>
+                            <td>{copy.shelf || 'N/A'}</td>
+                            <td>{copy.rack || 'N/A'}</td>
+                            <td>{copy.rowNumber || 'N/A'}</td>
+                            <td>
+                              <Badge className={getStatusBadgeClass(copy.status)}>
+                                {copy.status}
+                              </Badge>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </Table>
+                    <p className="text-muted small mt-2">Copy the barcode from the table above into the borrow form on the left.</p>
+                  </div>
+                )}
               </Card.Body>
             </Card>
           )}

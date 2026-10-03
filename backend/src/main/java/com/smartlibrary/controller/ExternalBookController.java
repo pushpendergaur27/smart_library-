@@ -1,5 +1,6 @@
 package com.smartlibrary.controller;
 
+import com.smartlibrary.dto.BookFactsResponse;
 import com.smartlibrary.dto.ExternalBookResponse;
 import com.smartlibrary.service.ExternalBookService;
 import org.springframework.http.ResponseEntity;
@@ -25,5 +26,10 @@ public class ExternalBookController {
             @RequestParam String q,
             @RequestParam(defaultValue = "10") int limit) {
         return ResponseEntity.ok(externalBookService.search(q, limit));
+    }
+
+    @GetMapping("/facts")
+    public ResponseEntity<BookFactsResponse> facts(@RequestParam String isbn) {
+        return ResponseEntity.ok(externalBookService.getBookFacts(isbn));
     }
 }

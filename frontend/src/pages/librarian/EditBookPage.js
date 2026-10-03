@@ -18,6 +18,7 @@ const EditBookPage = () => {
     edition: '',
     language: 'English',
     publicationYear: '',
+    rent: '',
     description: '',
     coverImage: '',
   });
@@ -38,6 +39,7 @@ const EditBookPage = () => {
           edition: data.edition || '',
           language: data.language || 'English',
           publicationYear: data.publicationYear || data.year || '',
+          rent: data.rent ?? '',
           description: data.description || '',
           coverImage: data.coverImage || data.imageUrl || '',
         });
@@ -140,13 +142,19 @@ const EditBookPage = () => {
             </Row>
 
             <Row>
-              <Col md={6}>
+              <Col md={4}>
                 <Form.Group className="mb-3">
                   <Form.Label>Publication Year</Form.Label>
                   <Form.Control type="number" name="publicationYear" value={formData.publicationYear} onChange={handleChange} min="1000" max="2099" />
                 </Form.Group>
               </Col>
-              <Col md={6}>
+              <Col md={4}>
+                <Form.Group className="mb-3">
+                  <Form.Label>Rent (₹)</Form.Label>
+                  <Form.Control type="number" name="rent" value={formData.rent} onChange={handleChange} min="0" step="0.5" />
+                </Form.Group>
+              </Col>
+              <Col md={4}>
                 <Form.Group className="mb-3">
                   <Form.Label>Cover Image URL</Form.Label>
                   <Form.Control type="url" name="coverImage" value={formData.coverImage} onChange={handleChange} />

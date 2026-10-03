@@ -2,6 +2,7 @@ package com.smartlibrary.service;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.smartlibrary.dto.BookFactsResponse;
 import com.smartlibrary.dto.ExternalBookResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,6 +28,8 @@ public class ExternalBookService {
 
     private static final String GOOGLE_BOOKS_URL = "https://www.googleapis.com/books/v1/volumes?q=%s&maxResults=10";
     private static final String OPEN_LIBRARY_URL = "https://openlibrary.org/search.json?q=%s&limit=10&fields=title,author_name,isbn,first_publish_year,publisher,cover_i,subject";
+    private static final String OPEN_LIBRARY_ISBN_URL = "https://openlibrary.org/search.json?q=isbn:%s&fields=key,title,number_of_pages_median,ratings_count";
+    private static final String OPEN_LIBRARY_RATINGS_URL = "https://openlibrary.org/works/%s/ratings.json";
 
     private final ObjectMapper objectMapper;
     private final HttpClient httpClient;
@@ -126,6 +129,62 @@ public class ExternalBookService {
             }
         }
         return results;
+    }
+
+    public BookFactsResponse getBookFacts(String isbn) {
+        BookFactsResponse facts = new BookFactsResponse();
+        String clean = isbn == null ? "" : isbn.replaceAll("[^0-9Xx]", "");
+        if (clean.length() < 10) {
+            return facts;
+        }
+
+        if (!googleApiKey.isEmpty()) {
+            try {
+                String url = "https://www.googleapis.com/books/v1/volumes?q=isbn:" + clean
+                        + "&key=" + URLEncoder.encode(googleApiKey, StandardCharsets.UTF_8);
+                JsonNode items = get(url).path("items");
+                if (items.isArray() && items.size() > 0) {
+                    JsonNode info = items.get(0).path("volumeInfo");
+                    if (info.hasNonNull("pageCount")) facts.setPageCount(info.path("pageCount").asInt());
+                    if (info.hasNonNull("averageRating")) facts.setRating(info.path("averageRating").asDouble());
+                    if (info.hasNonNull("ratingsCount")) facts.setRatingsCount(info.path("ratingsCount").asInt());
+                    facts.setSource("Google Books");
+                }
+            } catch (Exception e) {
+                log.warn("Google Books facts lookup failed: {}", e.getMessage());
+            }
+        }
+
+        if (facts.getPageCount() == null || facts.getRating() == null) {
+            try {
+                String url = String.format(OPEN_LIBRARY_ISBN_URL, clean);
+                JsonNode docs = get(url).path("docs");
+                if (docs.isArray() && docs.size() > 0) {
+                    JsonNode doc = docs.get(0);
+                    if (facts.getPageCount() == null && doc.path("number_of_pages_median").isInt()) {
+                        facts.setPageCount(doc.path("number_of_pages_median").asInt());
+                    }
+                    if (facts.getRatingsCount() == null && doc.path("ratings_count").isInt()) {
+                        facts.setRatingsCount(doc.path("ratings_count").asInt());
+                    }
+                    String workKey = doc.path("key").asText("");
+                    if (workKey.startsWith("/works/")) {
+                        try {
+                            JsonNode summary = get(String.format(OPEN_LIBRARY_RATINGS_URL, workKey.substring(7))).path("summary");
+                            if (facts.getRating() == null && summary.path("average").isNumber()) {
+                                facts.setRating(Math.round(summary.path("average").asDouble() * 10.0) / 10.0);
+                            }
+                        } catch (Exception e) {
+                            log.debug("No ratings available for work {}: {}", workKey, e.getMessage());
+                        }
+                    }
+                    if (facts.getSource() == null) facts.setSource("Open Library");
+                }
+            } catch (Exception e) {
+                log.warn("Open Library facts lookup failed: {}", e.getMessage());
+            }
+        }
+        return facts;
     }
 
     private JsonNode get(String url) throws Exception {
