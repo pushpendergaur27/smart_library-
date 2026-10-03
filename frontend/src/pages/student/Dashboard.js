@@ -84,7 +84,7 @@ const StudentDashboard = () => {
       </Row>
 
       <Row>
-        <Col lg={8}>
+        <Col lg={12}>
           <Card className="border-0 shadow-sm">
             <Card.Header className="bg-white border-bottom">
               <h5 className="mb-0 fw-bold">Recent Borrowed Books</h5>
@@ -121,19 +121,6 @@ const StudentDashboard = () => {
                   </table>
                 </div>
               )}
-            </Card.Body>
-          </Card>
-        </Col>
-        <Col lg={4}>
-          <Card className="border-0 shadow-sm">
-            <Card.Header className="bg-white border-bottom">
-              <h5 className="mb-0 fw-bold">Quick Actions</h5>
-            </Card.Header>
-            <Card.Body className="d-grid gap-2">
-              <Link to="/student/scan" className="btn btn-primary">Scan & Borrow</Link>
-              <Link to="/student/books" className="btn btn-outline-primary">Browse Books</Link>
-              <Link to="/student/reservations" className="btn btn-outline-primary">My Reservations</Link>
-              <Link to="/student/borrow-history" className="btn btn-outline-primary">Borrow History</Link>
             </Card.Body>
           </Card>
         </Col>
