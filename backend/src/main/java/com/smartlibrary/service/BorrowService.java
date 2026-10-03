@@ -29,6 +29,9 @@ public class BorrowService {
     @Value("${app.borrowing.max-limit:5}")
     private int maxBorrowLimit;
 
+    @Value("${app.borrowing.max-days:30}")
+    private int maxBorrowDays;
+
     public BorrowService(BorrowRecordRepository borrowRecordRepository, BookCopyRepository bookCopyRepository,
                          StudentRepository studentRepository, NotificationRepository notificationRepository) {
         this.borrowRecordRepository = borrowRecordRepository;
@@ -38,42 +41,68 @@ public class BorrowService {
     }
 
     @Transactional
-    public BorrowRecordResponse borrowBook(String barcode, Long studentId) {
-        BookCopy copy = bookCopyRepository.findByLibraryBarcodeWithBook(barcode)
+    public BorrowRecordResponse borrowBook(String barcode, Integer days, Integer copies, Long studentId) {
+        BookCopy barcodeCopy = bookCopyRepository.findByLibraryBarcodeWithBook(barcode)
                 .orElseThrow(() -> new ResourceNotFoundException("Book copy not found with barcode: " + barcode));
-        if (copy.getStatus() != CopyStatus.AVAILABLE) {
-            throw new BadRequestException("This copy is not available for borrowing. Status: " + copy.getStatus());
+        if (barcodeCopy.getStatus() != CopyStatus.AVAILABLE) {
+            throw new BadRequestException("This copy is not available for borrowing. Status: " + barcodeCopy.getStatus());
         }
         Student student = studentRepository.findById(studentId)
                 .orElseThrow(() -> new ResourceNotFoundException("Student not found"));
-        long activeBorrows = borrowRecordRepository.countActiveBorrowsByStudent(studentId);
-        if (activeBorrows >= maxBorrowLimit) {
-            throw new BadRequestException("Borrowing limit reached. Maximum " + maxBorrowLimit + " books at a time.");
+
+        int requestedDays = (days == null) ? borrowingPeriodDays : days;
+        if (requestedDays < 1 || requestedDays > maxBorrowDays) {
+            throw new BadRequestException("Borrowing period must be between 1 and " + maxBorrowDays + " days.");
         }
-        long alreadyBorrowed = borrowRecordRepository.countActiveBorrowByStudentAndBook(studentId, copy.getBook().getId());
+        int requestedCopies = (copies == null || copies < 1) ? 1 : copies;
+
+        long activeBorrows = borrowRecordRepository.countActiveBorrowsByStudent(studentId);
+        if (activeBorrows + requestedCopies > maxBorrowLimit) {
+            throw new BadRequestException("Borrowing limit reached. You can borrow " + Math.max(0, maxBorrowLimit - activeBorrows)
+                    + " more book(s); maximum is " + maxBorrowLimit + " at a time.");
+        }
+        long alreadyBorrowed = borrowRecordRepository.countActiveBorrowByStudentAndBook(studentId, barcodeCopy.getBook().getId());
         if (alreadyBorrowed > 0) {
             throw new BadRequestException("You have already borrowed this book.");
         }
 
+        List<BookCopy> availableCopies = bookCopyRepository.findByBookId(barcodeCopy.getBook().getId()).stream()
+                .filter(c -> c.getStatus() == CopyStatus.AVAILABLE)
+                .collect(Collectors.toList());
+        availableCopies.removeIf(c -> c.getId().equals(barcodeCopy.getId()));
+        availableCopies.add(0, barcodeCopy);
+        if (availableCopies.size() < requestedCopies) {
+            throw new BadRequestException("Only " + availableCopies.size() + " cop(y/ies) available right now.");
+        }
+
         LocalDateTime now = LocalDateTime.now();
-        BorrowRecord record = new BorrowRecord();
-        record.setStudent(student);
-        record.setCopy(copy);
-        record.setBorrowDate(now);
-        record.setDueDate(now.plusDays(borrowingPeriodDays));
-        record.setStatus(BorrowStatus.BORROWED);
-        record = borrowRecordRepository.save(record);
+        LocalDateTime dueDate = now.plusDays(requestedDays);
+        BorrowRecord firstRecord = null;
 
-        copy.setStatus(CopyStatus.BORROWED);
-        bookCopyRepository.save(copy);
+        for (int i = 0; i < requestedCopies; i++) {
+            BookCopy copy = availableCopies.get(i);
+            BorrowRecord record = new BorrowRecord();
+            record.setStudent(student);
+            record.setCopy(copy);
+            record.setBorrowDate(now);
+            record.setDueDate(dueDate);
+            record.setStatus(BorrowStatus.BORROWED);
+            record = borrowRecordRepository.save(record);
+            if (firstRecord == null) firstRecord = record;
 
+            copy.setStatus(CopyStatus.BORROWED);
+            bookCopyRepository.save(copy);
+        }
+
+        String title = barcodeCopy.getBook().getTitle();
         Notification notification = new Notification();
         notification.setStudent(student);
-        notification.setMessage("You have borrowed \"" + copy.getBook().getTitle() + "\". Due date: " + record.getDueDate().toLocalDate());
+        notification.setMessage("You have borrowed " + (requestedCopies > 1 ? requestedCopies + " copies of " : "")
+                + "\"" + title + "\". Due date: " + dueDate.toLocalDate());
         notification.setType(Notification.NotificationType.BORROW_SUCCESS);
         notificationRepository.save(notification);
 
-        return toResponse(record);
+        return toResponse(firstRecord);
     }
 
     @Transactional

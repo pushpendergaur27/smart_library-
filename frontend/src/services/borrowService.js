@@ -1,8 +1,8 @@
 import api from './api';
 
 export const borrowService = {
-  borrowBook: async (barcode) => {
-    const response = await api.post('/student/borrow', { barcode });
+  borrowBook: async (barcode, days, copies) => {
+    const response = await api.post('/student/borrow', { barcode, days, copies });
     return response.data;
   },
 

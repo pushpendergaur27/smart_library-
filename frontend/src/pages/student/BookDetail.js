@@ -34,6 +34,8 @@ const StudentBookDetail = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [barcode, setBarcode] = useState('');
+  const [borrowDays, setBorrowDays] = useState(14);
+  const [borrowCopies, setBorrowCopies] = useState(1);
   const [borrowing, setBorrowing] = useState(false);
   const [borrowResult, setBorrowResult] = useState(null);
   const [reserving, setReserving] = useState(false);
@@ -67,12 +69,16 @@ const StudentBookDetail = () => {
   const handleBorrow = async (e) => {
     e.preventDefault();
     if (!barcode.trim()) return;
+    const days = Math.max(1, Math.min(30, parseInt(borrowDays, 10) || 14));
+    const maxCopies = Math.max(1, availableCopiesList.length);
+    const copies = Math.max(1, Math.min(maxCopies, parseInt(borrowCopies, 10) || 1));
     setBorrowing(true);
     setBorrowResult(null);
     try {
-      const response = await borrowService.borrowBook(barcode.trim());
+      const response = await borrowService.borrowBook(barcode.trim(), days, copies);
       setBorrowResult({ success: true, message: response.message || 'Book borrowed successfully!' });
       setBarcode('');
+      setBorrowCopies(1);
       const updated = await bookService.getById(id);
       setBook(updated);
     } catch (err) {
@@ -163,6 +169,7 @@ const StudentBookDetail = () => {
                 <p className="text-muted small mb-2">Enter the barcode from the book's library sticker to borrow it.</p>
                 <Form onSubmit={handleBorrow}>
                   <Form.Group className="mb-3">
+                    <Form.Label className="small fw-bold">Barcode</Form.Label>
                     <Form.Control
                       type="text"
                       placeholder="e.g. 9780134685991-C1"
@@ -170,6 +177,33 @@ const StudentBookDetail = () => {
                       onChange={(e) => setBarcode(e.target.value)}
                     />
                   </Form.Group>
+                  <Row className="g-2 mb-3">
+                    <Col xs={6}>
+                      <Form.Label className="small fw-bold">Days</Form.Label>
+                      <Form.Control
+                        type="number"
+                        min="1"
+                        max="30"
+                        value={borrowDays}
+                        onChange={(e) => setBorrowDays(e.target.value)}
+                      />
+                    </Col>
+                    <Col xs={6}>
+                      <Form.Label className="small fw-bold">Copies</Form.Label>
+                      <Form.Select
+                        value={borrowCopies > Math.max(1, availableCopiesList.length) ? Math.max(1, availableCopiesList.length) : borrowCopies}
+                        onChange={(e) => setBorrowCopies(Number(e.target.value))}
+                      >
+                        {Array.from({ length: Math.max(1, availableCopiesList.length) }, (_, i) => i + 1).map((n) => (
+                          <option key={n} value={n}>{n}</option>
+                        ))}
+                      </Form.Select>
+                    </Col>
+                  </Row>
+                  <p className="text-muted small mb-3">
+                    Due: <strong>{new Date(Date.now() + (Math.max(1, Math.min(30, parseInt(borrowDays, 10) || 14))) * 86400000).toLocaleDateString()}</strong>
+                    {' '}· 1–30 days · up to {availableCopiesList.length} {availableCopiesList.length === 1 ? 'copy' : 'copies'}
+                  </p>
                   <Button variant="success" type="submit" disabled={borrowing || !barcode.trim()} className="w-100">
                     {borrowing ? 'Borrowing...' : 'Borrow Book'}
                   </Button>

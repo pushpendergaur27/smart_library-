@@ -44,12 +44,16 @@ public class StudentBorrowController {
     @PostMapping("/borrow")
     public ResponseEntity<Map<String, Object>> borrowBook(@Valid @RequestBody BorrowRequest request) {
         Long studentId = getCurrentStudentId();
-        BorrowRecordResponse record = borrowService.borrowBook(request.getBarcode(), studentId);
+        BorrowRecordResponse record = borrowService.borrowBook(request.getBarcode(), request.getDays(), request.getCopies(), studentId);
         BookCopy copy = bookCopyRepository.findByLibraryBarcodeWithBook(request.getBarcode()).orElse(null);
         if (copy != null) {
             reservationService.processReservationQueue(copy.getBook().getId(), copy);
         }
-        return ResponseEntity.ok(Map.of("message", "Book borrowed successfully", "record", record));
+        int count = (request.getCopies() == null || request.getCopies() < 1) ? 1 : request.getCopies();
+        String message = count > 1
+                ? count + " copies borrowed successfully. Due: " + record.getDueDate().toLocalDate()
+                : "Book borrowed successfully. Due: " + record.getDueDate().toLocalDate();
+        return ResponseEntity.ok(Map.of("message", message, "record", record));
     }
 
     @GetMapping("/borrowed-books")
