@@ -7,13 +7,14 @@ import {
   BarElement,
   PointElement,
   LineElement,
+  LineController,
   Tooltip,
   Legend,
 } from 'chart.js';
 import { Bar as BarChart } from 'react-chartjs-2';
 import { librarianService } from '../services/librarianService';
 
-ChartJS.register(CategoryScale, LinearScale, BarElement, PointElement, LineElement, Tooltip, Legend);
+ChartJS.register(CategoryScale, LinearScale, BarElement, PointElement, LineElement, LineController, Tooltip, Legend);
 
 const PALETTE = ['#4e79a7', '#f28e2b', '#e15759', '#76b7b2', '#59a14f', '#edc948', '#b07aa1'];
 const trunc = (s, n = 26) => (s && s.length > n ? s.slice(0, n - 1) + '…' : s || '');
