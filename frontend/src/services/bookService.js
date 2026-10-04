@@ -11,6 +11,16 @@ export const bookService = {
     return response.data;
   },
 
+  getReviews: async (id) => {
+    const response = await api.get(`/books/${id}/reviews`);
+    return response.data;
+  },
+
+  submitReview: async (id, review) => {
+    const response = await api.post(`/student/books/${id}/reviews`, review);
+    return response.data;
+  },
+
   search: async (params) => {
     const response = await api.get('/books/search', { params });
     return response.data;

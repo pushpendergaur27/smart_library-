@@ -5,6 +5,7 @@ import { bookService } from '../../services/bookService';
 import { borrowService } from '../../services/borrowService';
 import { reservationService } from '../../services/reservationService';
 import { externalBookService } from '../../services/externalBookService';
+import { useAuth } from '../../context/AuthContext';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import EmptyState from '../../components/EmptyState';
 import AlertMessage from '../../components/AlertMessage';
@@ -30,6 +31,7 @@ const Stars = ({ rating }) => (
 const StudentBookDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [book, setBook] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -43,6 +45,11 @@ const StudentBookDetail = () => {
   const [facts, setFacts] = useState(null);
   const [showLocation, setShowLocation] = useState(false);
   const [coverFailed, setCoverFailed] = useState(false);
+  const [reviewsData, setReviewsData] = useState(null);
+  const [myRating, setMyRating] = useState(5);
+  const [myComment, setMyComment] = useState('');
+  const [submittingReview, setSubmittingReview] = useState(false);
+  const [reviewMsg, setReviewMsg] = useState({ type: '', text: '' });
 
   useEffect(() => {
     const fetchBook = async () => {
@@ -65,6 +72,37 @@ const StudentBookDetail = () => {
         .catch(() => setFacts(null));
     }
   }, [book?.isbn]);
+
+  useEffect(() => {
+    bookService.getReviews(id)
+      .then(setReviewsData)
+      .catch(() => setReviewsData(null));
+  }, [id]);
+
+  const myReview = reviewsData?.reviews?.find((r) => r.studentId === user?.id);
+
+  useEffect(() => {
+    if (myReview) {
+      setMyRating(myReview.rating);
+      setMyComment(myReview.comment || '');
+    }
+  }, [myReview?.id]);
+
+  const handleSubmitReview = async (e) => {
+    e.preventDefault();
+    setSubmittingReview(true);
+    setReviewMsg({ type: '', text: '' });
+    try {
+      await bookService.submitReview(id, { rating: myRating, comment: myComment });
+      const updated = await bookService.getReviews(id);
+      setReviewsData(updated);
+      setReviewMsg({ type: 'success', text: myReview ? 'Review updated!' : 'Review submitted. Thanks!' });
+    } catch (err) {
+      setReviewMsg({ type: 'danger', text: err.response?.data?.message || 'Failed to submit review.' });
+    } finally {
+      setSubmittingReview(false);
+    }
+  };
 
   const handleBorrow = async (e) => {
     e.preventDefault();
@@ -266,6 +304,74 @@ const StudentBookDetail = () => {
                 <div>
                   <h6 className="fw-bold">Description</h6>
                   <p className="text-muted mb-0">{book.description}</p>
+                </div>
+              )}
+            </Card.Body>
+          </Card>
+
+          <Card className="border-0 shadow-sm mb-4">
+            <Card.Header className="bg-white border-bottom d-flex align-items-center justify-content-between">
+              <h5 className="mb-0 fw-bold">★ Student Reviews</h5>
+              {reviewsData?.reviewCount > 0 && (
+                <span className="text-muted small">
+                  <strong>{reviewsData.averageRating?.toFixed(1)}</strong> / 5 · {reviewsData.reviewCount} {reviewsData.reviewCount === 1 ? 'review' : 'reviews'}
+                </span>
+              )}
+            </Card.Header>
+            <Card.Body>
+              <Form onSubmit={handleSubmitReview} className="mb-4 pb-3 border-bottom">
+                <div className="d-flex align-items-center mb-2" style={{ gap: '2px' }}>
+                  {[1, 2, 3, 4, 5].map((n) => (
+                    <span
+                      key={n}
+                      role="button"
+                      onClick={() => setMyRating(n)}
+                      style={{ cursor: 'pointer', fontSize: '1.6rem', color: myRating >= n ? '#f5a623' : '#dee2e6' }}
+                    >
+                      ★
+                    </span>
+                  ))}
+                  <span className="text-muted small ms-2">{myRating}/5</span>
+                </div>
+                <Form.Control
+                  as="textarea"
+                  rows={2}
+                  placeholder="Share your thoughts about this book (optional)..."
+                  value={myComment}
+                  onChange={(e) => setMyComment(e.target.value)}
+                  className="mb-2"
+                />
+                <div className="d-flex align-items-center gap-2">
+                  <Button variant="primary" type="submit" size="sm" disabled={submittingReview}>
+                    {submittingReview ? 'Submitting...' : myReview ? 'Update Review' : 'Submit Review'}
+                  </Button>
+                  {reviewMsg.text && (
+                    <Alert variant={reviewMsg.type} className="py-1 px-2 mb-0 small">{reviewMsg.text}</Alert>
+                  )}
+                </div>
+              </Form>
+
+              {reviewsData?.reviews?.length === 0 ? (
+                <p className="text-muted text-center mb-0">No reviews yet — be the first to review this book!</p>
+              ) : (
+                <div className="d-flex flex-column gap-3">
+                  {reviewsData?.reviews?.map((review) => (
+                    <div key={review.id}>
+                      <div className="d-flex justify-content-between align-items-center">
+                        <strong className="small">{review.studentName}</strong>
+                        <small className="text-muted">
+                          {review.createdAt ? new Date(review.createdAt).toLocaleDateString() : ''}
+                        </small>
+                      </div>
+                      <div style={{ color: '#f5a623', fontSize: '0.95rem' }}>
+                        {[1, 2, 3, 4, 5].map((n) => (
+                          <span key={n} style={{ color: review.rating >= n ? '#f5a623' : '#dee2e6' }}>★</span>
+                        ))}
+                        {review.studentId === user?.id && <span className="text-muted small ms-2">(you)</span>}
+                      </div>
+                      {review.comment && <p className="text-muted small mb-0">{review.comment}</p>}
+                    </div>
+                  ))}
                 </div>
               )}
             </Card.Body>

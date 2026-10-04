@@ -18,15 +18,17 @@ public class DataInitializer implements CommandLineRunner {
     private final LibrarianRepository librarianRepository;
     private final BookRepository bookRepository;
     private final BookCopyRepository bookCopyRepository;
+    private final BookReviewRepository bookReviewRepository;
     private final PasswordEncoder passwordEncoder;
 
     public DataInitializer(StudentRepository studentRepository, LibrarianRepository librarianRepository,
                            BookRepository bookRepository, BookCopyRepository bookCopyRepository,
-                           PasswordEncoder passwordEncoder) {
+                           BookReviewRepository bookReviewRepository, PasswordEncoder passwordEncoder) {
         this.studentRepository = studentRepository;
         this.librarianRepository = librarianRepository;
         this.bookRepository = bookRepository;
         this.bookCopyRepository = bookCopyRepository;
+        this.bookReviewRepository = bookReviewRepository;
         this.passwordEncoder = passwordEncoder;
     }
 
@@ -61,6 +63,40 @@ public class DataInitializer implements CommandLineRunner {
         }
 
         backfillRent();
+        seedReviews();
+    }
+
+    private void seedReviews() {
+        if (bookReviewRepository.count() > 0) return;
+        Student student = studentRepository.findByEmail("student@smartlibrary.com").orElse(null);
+        if (student == null) return;
+
+        String[][] reviews = {
+            {"978-0140283297", "5", "One of the best books I have ever read. Loved every page!"},
+            {"978-0451524935", "5", "Brilliant and thought-provoking. A must read."},
+            {"978-0134685991", "5", "Essential for every Java developer. Clear and practical."},
+            {"978-0439023481", "5", "Could not put it down. Read it in two days."},
+            {"978-0132350884", "4", "Great habits for writing cleaner code."},
+            {"978-0060935467", "4", "A classic that still feels relevant today."},
+            {"978-0062316102", "4", "Fascinating overview of human history."},
+            {"978-0393602586", "3", "Interesting ideas, but quite dense at times."},
+            {"978-0743273565", "3", "Beautiful writing, though the story felt slow."},
+            {"978-0141439518", "2", "Too slow for me, could not get into it."},
+            {"978-1501222702", "2", "Predictable plot. Expected more."},
+            {"978-1292222431", "1", "Very hard to follow. Needs better examples."},
+        };
+
+        for (String[] row : reviews) {
+            bookRepository.findByIsbn(row[0]).ifPresent(book -> {
+                BookReview review = new BookReview();
+                review.setBook(book);
+                review.setStudent(student);
+                review.setRating(Integer.parseInt(row[1]));
+                review.setComment(row[2]);
+                bookReviewRepository.save(review);
+            });
+        }
+        log.info("Sample reviews created: {}", bookReviewRepository.count());
     }
 
     private void backfillRent() {

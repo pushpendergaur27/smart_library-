@@ -6,6 +6,11 @@ export const librarianService = {
     return response.data;
   },
 
+  getDashboardCharts: async () => {
+    const response = await api.get('/librarian/dashboard/charts');
+    return response.data;
+  },
+
   getStudents: async () => {
     const response = await api.get('/librarian/students');
     return response.data;

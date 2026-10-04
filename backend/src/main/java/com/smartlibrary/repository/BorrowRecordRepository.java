@@ -36,4 +36,7 @@ public interface BorrowRecordRepository extends JpaRepository<BorrowRecord, Long
 
     @Query("SELECT COUNT(br) FROM BorrowRecord br")
     long countAll();
+
+    @Query("SELECT br FROM BorrowRecord br JOIN FETCH br.student s JOIN FETCH br.copy c JOIN FETCH c.book b")
+    List<BorrowRecord> findAllWithDetails();
 }

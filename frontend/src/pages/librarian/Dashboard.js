@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { Container, Row, Col, Card } from 'react-bootstrap';
 import { librarianService } from '../../services/librarianService';
 import LoadingSpinner from '../../components/LoadingSpinner';
+import LibrarianCharts from '../../components/LibrarianCharts';
 import { FiBook, FiUsers, FiArrowLeftCircle, FiBookmark, FiCopy, FiBarChart2 } from 'react-icons/fi';
 
 const LibrarianDashboard = () => {
@@ -53,6 +54,8 @@ const LibrarianDashboard = () => {
           </Col>
         ))}
       </Row>
+
+      <LibrarianCharts />
 
       <Row className="mt-4">
         <Col lg={8}>

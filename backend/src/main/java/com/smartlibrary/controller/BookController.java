@@ -2,6 +2,8 @@ package com.smartlibrary.controller;
 
 import com.smartlibrary.dto.BookRequest;
 import com.smartlibrary.dto.BookResponse;
+import com.smartlibrary.dto.BookReviewsResponse;
+import com.smartlibrary.service.BookReviewService;
 import com.smartlibrary.service.BookService;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
@@ -14,9 +16,11 @@ import java.util.List;
 public class BookController {
 
     private final BookService bookService;
+    private final BookReviewService reviewService;
 
-    public BookController(BookService bookService) {
+    public BookController(BookService bookService, BookReviewService reviewService) {
         this.bookService = bookService;
+        this.reviewService = reviewService;
     }
 
     @GetMapping
@@ -46,6 +50,11 @@ public class BookController {
     @GetMapping("/{id}")
     public ResponseEntity<BookResponse> getBookById(@PathVariable Long id) {
         return ResponseEntity.ok(bookService.getBookById(id));
+    }
+
+    @GetMapping("/{id}/reviews")
+    public ResponseEntity<BookReviewsResponse> getBookReviews(@PathVariable Long id) {
+        return ResponseEntity.ok(reviewService.getBookReviews(id));
     }
 
     @GetMapping("/search")
