@@ -67,14 +67,12 @@ const CopiesPage = () => {
     try {
       const copyData = {
         bookId: newCopy.bookId,
-        barcode: newCopy.barcode,
-        location: {
-          floor: newCopy.floor,
-          section: newCopy.section,
-          shelf: newCopy.shelf,
-          rack: newCopy.rack,
-          row: newCopy.row,
-        },
+        libraryBarcode: newCopy.barcode,
+        floor: newCopy.floor,
+        section: newCopy.section,
+        shelf: newCopy.shelf,
+        rack: newCopy.rack,
+        rowNumber: newCopy.row,
       };
       const created = await librarianService.createCopy(copyData);
       setCopies((prev) => [...prev, created]);
@@ -112,13 +110,13 @@ const CopiesPage = () => {
       section: loc.section || copy.section || '',
       shelf: loc.shelf || copy.shelf || '',
       rack: loc.rack || copy.rack || '',
-      row: loc.row || copy.row || '',
+      row: loc.row || copy.rowNumber || '',
     });
     setShowEditModal(true);
   };
 
   const filteredCopies = bookFilter
-    ? copies.filter((c) => (c.bookId || c.book?.id?.toString()) === bookFilter)
+    ? copies.filter((c) => (c.bookId != null ? String(c.bookId) : (c.book?.id?.toString() || '')) === bookFilter)
     : copies;
 
   if (loading) return <LoadingSpinner message="Loading copies..." />;
@@ -168,13 +166,13 @@ const CopiesPage = () => {
                 const loc = copy.location || {};
                 return (
                   <tr key={copy.id}>
-                    <td><code>{copy.barcode || 'N/A'}</code></td>
+                    <td><code>{copy.libraryBarcode || 'N/A'}</code></td>
                     <td>{copy.bookTitle || copy.book?.title || 'N/A'}</td>
                     <td>{loc.floor || copy.floor || 'N/A'}</td>
                     <td>{loc.section || copy.section || 'N/A'}</td>
                     <td>{loc.shelf || copy.shelf || 'N/A'}</td>
                     <td>{loc.rack || copy.rack || 'N/A'}</td>
-                    <td>{loc.row || copy.row || 'N/A'}</td>
+                    <td>{loc.row || copy.rowNumber || 'N/A'}</td>
                     <td><Badge className={getStatusBadgeClass(copy.status)}>{copy.status}</Badge></td>
                     <td>
                       <Button variant="outline-primary" size="sm" onClick={() => openEditModal(copy)}>
@@ -230,7 +228,7 @@ const CopiesPage = () => {
       {/* Edit Location Modal */}
       <Modal show={showEditModal} onHide={() => setShowEditModal(false)}>
         <Modal.Header closeButton>
-          <Modal.Title>Edit Location - {selectedCopy?.barcode}</Modal.Title>
+          <Modal.Title>Edit Location - {selectedCopy?.libraryBarcode}</Modal.Title>
         </Modal.Header>
         <Modal.Body>
           <Row>

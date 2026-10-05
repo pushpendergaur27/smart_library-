@@ -1,9 +1,10 @@
 package com.smartlibrary.dto;
 
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 
 public class CopyRequest {
-    @NotBlank(message = "Book ID is required")
+    @NotNull(message = "Book ID is required")
     private Long bookId;
     @NotBlank(message = "Library barcode is required")
     private String libraryBarcode;
