@@ -18,10 +18,12 @@ public class BookService {
 
     private final BookRepository bookRepository;
     private final BookCopyRepository bookCopyRepository;
+    private final CoverImageResolver coverImageResolver;
 
-    public BookService(BookRepository bookRepository, BookCopyRepository bookCopyRepository) {
+    public BookService(BookRepository bookRepository, BookCopyRepository bookCopyRepository, CoverImageResolver coverImageResolver) {
         this.bookRepository = bookRepository;
         this.bookCopyRepository = bookCopyRepository;
+        this.coverImageResolver = coverImageResolver;
     }
 
     public List<BookResponse> getAllBooks() {
@@ -59,7 +61,7 @@ public class BookService {
         book.setPublisher(request.getPublisher());
         book.setGenre(request.getGenre());
         book.setDescription(request.getDescription());
-        book.setCoverImage(request.getCoverImage());
+        book.setCoverImage(coverImageResolver.resolve(request.getCoverImage()));
         book.setLanguage(request.getLanguage());
         book.setEdition(request.getEdition());
         book.setPublicationYear(request.getPublicationYear());
@@ -77,7 +79,7 @@ public class BookService {
         book.setPublisher(request.getPublisher());
         book.setGenre(request.getGenre());
         book.setDescription(request.getDescription());
-        book.setCoverImage(request.getCoverImage());
+        book.setCoverImage(coverImageResolver.resolve(request.getCoverImage()));
         book.setLanguage(request.getLanguage());
         book.setEdition(request.getEdition());
         book.setPublicationYear(request.getPublicationYear());

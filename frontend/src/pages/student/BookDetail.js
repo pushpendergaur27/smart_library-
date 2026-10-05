@@ -11,13 +11,7 @@ import EmptyState from '../../components/EmptyState';
 import AlertMessage from '../../components/AlertMessage';
 import { getStatusBadgeClass } from '../../utils/helpers';
 import { FiArrowLeft, FiMapPin, FiCheckCircle, FiXCircle, FiChevronDown, FiChevronUp } from 'react-icons/fi';
-
-const openLibraryCover = (isbn) => {
-  if (!isbn) return null;
-  const clean = String(isbn).replace(/[^0-9Xx]/g, '');
-  if (clean.length < 10) return null;
-  return `https://covers.openlibrary.org/b/isbn/${clean}-M.jpg?default=false`;
-};
+import { useCoverImage } from '../../hooks/useCoverImage';
 
 const Stars = ({ rating }) => (
   <span>
@@ -44,7 +38,7 @@ const StudentBookDetail = () => {
   const [reserveMsg, setReserveMsg] = useState({ type: '', text: '' });
   const [facts, setFacts] = useState(null);
   const [showLocation, setShowLocation] = useState(false);
-  const [coverFailed, setCoverFailed] = useState(false);
+  const { src: cover, onError: onCoverError } = useCoverImage(book);
   const [reviewsData, setReviewsData] = useState(null);
   const [myRating, setMyRating] = useState(5);
   const [myComment, setMyComment] = useState('');
@@ -150,7 +144,6 @@ const StudentBookDetail = () => {
   const totalCopies = book.totalCopies ?? 0;
   const copies = book.copies || [];
   const availableCopiesList = copies.filter((c) => c.status === 'AVAILABLE');
-  const cover = !coverFailed && (book.coverImage || book.imageUrl || openLibraryCover(book.isbn));
   const rent = book.rent != null && Number(book.rent) > 0 ? `₹${Number(book.rent).toLocaleString()}` : 'Free';
 
   const detailRows = [
@@ -184,7 +177,7 @@ const StudentBookDetail = () => {
               <img
                 src={cover}
                 alt={book.title || 'Book cover'}
-                onError={() => setCoverFailed(true)}
+                onError={onCoverError}
                 className="card-img-top bg-light"
                 style={{ height: '420px', objectFit: 'contain', padding: '16px' }}
               />

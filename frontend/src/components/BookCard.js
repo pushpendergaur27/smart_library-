@@ -1,20 +1,13 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Card } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
 import { truncateText } from '../utils/helpers';
-
-const openLibraryCover = (isbn) => {
-  if (!isbn) return null;
-  const clean = String(isbn).replace(/[^0-9Xx]/g, '');
-  if (clean.length < 10) return null;
-  return `https://covers.openlibrary.org/b/isbn/${clean}-M.jpg?default=false`;
-};
+import { useCoverImage } from '../hooks/useCoverImage';
 
 const BookCard = ({ book, basePath = '/student/books' }) => {
-  const [imgFailed, setImgFailed] = useState(false);
+  const { src: cover, onError } = useCoverImage(book);
   const availableCopies = book.availableCopies ?? book.availableCopiesCount ?? 0;
   const totalCopies = book.totalCopies ?? book.totalCopiesCount ?? 0;
-  const cover = book.coverImage || book.imageUrl || openLibraryCover(book.isbn);
 
   return (
     <Card className="h-100 shadow-sm book-card">
@@ -23,12 +16,12 @@ const BookCard = ({ book, basePath = '/student/books' }) => {
           className="bg-light d-flex align-items-center justify-content-center overflow-hidden"
           style={{ height: '200px' }}
         >
-          {cover && !imgFailed ? (
+          {cover ? (
             <img
               src={cover}
               alt={book.title || 'Book cover'}
               loading="lazy"
-              onError={() => setImgFailed(true)}
+              onError={onError}
               style={{ width: '100%', height: '100%', objectFit: 'cover' }}
             />
           ) : (
