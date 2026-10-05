@@ -35,6 +35,11 @@ public class LibrarianDashboardController {
         return ResponseEntity.ok(librarianService.getAllStudents());
     }
 
+    @GetMapping("/borrows")
+    public ResponseEntity<LibrarianBorrowsResponse> getBorrows() {
+        return ResponseEntity.ok(librarianService.getBorrows());
+    }
+
     @GetMapping("/reports")
     public ResponseEntity<ReportsResponse> getReports() {
         return ResponseEntity.ok(librarianService.getReports());

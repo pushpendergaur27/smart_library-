@@ -4,7 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import { Nav } from 'react-bootstrap';
 import {
   FiGrid, FiBook, FiPlusSquare, FiCopy, FiUsers, FiArrowLeftCircle,
-  FiBookmark, FiBarChart2, FiUser,
+  FiBookmark, FiBarChart2, FiUser, FiBookOpen, FiBell,
 } from 'react-icons/fi';
 
 const LibrarianLayout = () => {
@@ -16,9 +16,11 @@ const LibrarianLayout = () => {
     { to: '/librarian/books/add', icon: <FiPlusSquare />, label: 'Add Book' },
     { to: '/librarian/copies', icon: <FiCopy />, label: 'Manage Copies' },
     { to: '/librarian/students', icon: <FiUsers />, label: 'Students' },
+    { to: '/librarian/borrows', icon: <FiBookOpen />, label: 'Borrowed Books' },
     { to: '/librarian/returns', icon: <FiArrowLeftCircle />, label: 'Process Returns' },
     { to: '/librarian/reservations', icon: <FiBookmark />, label: 'Reservations' },
     { to: '/librarian/reports', icon: <FiBarChart2 />, label: 'Reports' },
+    { to: '/librarian/notifications', icon: <FiBell />, label: 'Notifications' },
     { to: '/librarian/profile', icon: <FiUser />, label: 'Profile' },
   ];
 

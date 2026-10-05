@@ -29,10 +29,10 @@ const LibrarianDashboard = () => {
   const statCards = [
     { title: 'Total Books', value: stats?.totalBooks || 0, icon: <FiBook size={28} />, color: 'primary', link: '/librarian/books' },
     { title: 'Total Copies', value: stats?.totalCopies || 0, icon: <FiCopy size={28} />, color: 'info', link: '/librarian/copies' },
-    { title: 'Active Borrows', value: stats?.activeBorrows || 0, icon: <FiArrowLeftCircle size={28} />, color: 'warning', link: '/librarian/returns' },
-    { title: 'Registered Students', value: stats?.totalStudents || 0, icon: <FiUsers size={28} />, color: 'success', link: '/librarian/students' },
-    { title: 'Pending Reservations', value: stats?.pendingReservations || 0, icon: <FiBookmark size={28} />, color: 'danger', link: '/librarian/reservations' },
-    { title: 'Overdue Books', value: stats?.overdueBooks || 0, icon: <FiBarChart2 size={28} />, color: 'dark', link: '/librarian/reports' },
+  { title: 'Active Borrows', value: stats?.activeBorrows || 0, icon: <FiArrowLeftCircle size={28} />, color: 'warning', link: '/librarian/borrows?status=BORROWED' },
+  { title: 'Registered Students', value: stats?.totalStudents || 0, icon: <FiUsers size={28} />, color: 'success', link: '/librarian/students' },
+  { title: 'Pending Reservations', value: stats?.pendingReservations || 0, icon: <FiBookmark size={28} />, color: 'danger', link: '/librarian/reservations' },
+  { title: 'Overdue Books', value: stats?.overdueBooks || 0, icon: <FiBarChart2 size={28} />, color: 'dark', link: '/librarian/borrows?status=OVERDUE' },
   ];
 
   return (

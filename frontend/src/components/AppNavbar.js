@@ -1,13 +1,27 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { librarianService } from '../services/librarianService';
 import { Navbar, Nav, Container, Badge, Button } from 'react-bootstrap';
-import { FiBook, FiUser, FiLogOut, FiMenu } from 'react-icons/fi';
+import { FiBook, FiUser, FiLogOut, FiMenu, FiBell } from 'react-icons/fi';
 
 const AppNavbar = () => {
   const { isAuthenticated, user, logout, isStudent, isLibrarian } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
+  const [libUnread, setLibUnread] = useState(0);
+
+  useEffect(() => {
+    if (!isLibrarian) {
+      setLibUnread(0);
+      return;
+    }
+    let cancelled = false;
+    librarianService.getUnreadNotificationCount()
+      .then((data) => { if (!cancelled) setLibUnread(data?.count || 0); })
+      .catch(() => { if (!cancelled) setLibUnread(0); });
+    return () => { cancelled = true; };
+  }, [isLibrarian, location.pathname]);
 
   const handleLogout = () => {
     logout();
@@ -57,6 +71,12 @@ const AppNavbar = () => {
                 {isStudent && (
                   <Nav.Link as={Link} to="/student/notifications" className="me-2">
                     <FiMenu /> Notifications
+                  </Nav.Link>
+                )}
+                {isLibrarian && (
+                  <Nav.Link as={Link} to="/librarian/notifications" className="me-2">
+                    <FiBell /> Notifications
+                    {libUnread > 0 && <Badge bg="danger" className="ms-1">{libUnread}</Badge>}
                   </Nav.Link>
                 )}
                 <Nav.Link as={Link} to={isStudent ? '/student/profile' : '/librarian/profile'} className="me-2">

@@ -56,4 +56,29 @@ export const librarianService = {
     const response = await api.put('/auth/profile', profileData);
     return response.data;
   },
+
+  getBorrows: async () => {
+    const response = await api.get('/librarian/borrows');
+    return response.data;
+  },
+
+  getNotifications: async () => {
+    const response = await api.get('/librarian/notifications');
+    return response.data;
+  },
+
+  getUnreadNotificationCount: async () => {
+    const response = await api.get('/librarian/notifications/unread-count');
+    return response.data;
+  },
+
+  markNotificationRead: async (id) => {
+    const response = await api.put(`/librarian/notifications/${id}/read`);
+    return response.data;
+  },
+
+  markAllNotificationsRead: async () => {
+    const response = await api.put('/librarian/notifications/read-all');
+    return response.data;
+  },
 };

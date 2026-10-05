@@ -28,6 +28,9 @@ public interface BorrowRecordRepository extends JpaRepository<BorrowRecord, Long
     @Query("SELECT br FROM BorrowRecord br WHERE br.status = 'BORROWED' AND br.dueDate < CURRENT_TIMESTAMP")
     List<BorrowRecord> findOverdueBorrows();
 
+    @Query("SELECT DISTINCT br FROM BorrowRecord br JOIN FETCH br.student s JOIN FETCH br.copy c JOIN FETCH c.book b WHERE br.status = 'BORROWED' AND br.dueDate < CURRENT_TIMESTAMP")
+    List<BorrowRecord> findOverdueBorrowsWithDetails();
+
     @Query("SELECT COUNT(br) FROM BorrowRecord br WHERE br.status = 'BORROWED' AND br.student.id = :studentId")
     long countActiveBorrowsByStudent(@Param("studentId") Long studentId);
 

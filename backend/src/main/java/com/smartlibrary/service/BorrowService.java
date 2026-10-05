@@ -22,6 +22,7 @@ public class BorrowService {
     private final BookCopyRepository bookCopyRepository;
     private final StudentRepository studentRepository;
     private final NotificationRepository notificationRepository;
+    private final LibrarianNotificationService librarianNotificationService;
 
     @Value("${app.borrowing.period-days:14}")
     private int borrowingPeriodDays;
@@ -33,11 +34,13 @@ public class BorrowService {
     private int maxBorrowDays;
 
     public BorrowService(BorrowRecordRepository borrowRecordRepository, BookCopyRepository bookCopyRepository,
-                         StudentRepository studentRepository, NotificationRepository notificationRepository) {
+                         StudentRepository studentRepository, NotificationRepository notificationRepository,
+                         LibrarianNotificationService librarianNotificationService) {
         this.borrowRecordRepository = borrowRecordRepository;
         this.bookCopyRepository = bookCopyRepository;
         this.studentRepository = studentRepository;
         this.notificationRepository = notificationRepository;
+        this.librarianNotificationService = librarianNotificationService;
     }
 
     @Transactional
@@ -101,6 +104,9 @@ public class BorrowService {
                 + "\"" + title + "\". Due date: " + dueDate.toLocalDate());
         notification.setType(Notification.NotificationType.BORROW_SUCCESS);
         notificationRepository.save(notification);
+
+        librarianNotificationService.notifyStudentBorrowed(student.getName(), title, requestedCopies,
+                dueDate.toLocalDate(), firstRecord.getId());
 
         return toResponse(firstRecord);
     }

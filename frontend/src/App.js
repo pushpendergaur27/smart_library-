@@ -34,6 +34,8 @@ import LibrarianReturns from './pages/librarian/ReturnsPage';
 import LibrarianReservations from './pages/librarian/LibrarianReservations';
 import LibrarianReports from './pages/librarian/ReportsPage';
 import LibrarianProfile from './pages/librarian/LibrarianProfile';
+import LibrarianBorrows from './pages/librarian/BorrowsPage';
+import LibrarianNotifications from './pages/librarian/LibrarianNotificationsPage';
 
 const PublicRoute = ({ children }) => {
   const { isAuthenticated, user, loading } = useAuth();
@@ -93,8 +95,10 @@ function AppRoutes() {
         <Route path="books/:id" element={<LibrarianBookDetails />} />
         <Route path="copies" element={<LibrarianCopies />} />
         <Route path="students" element={<LibrarianStudents />} />
+        <Route path="borrows" element={<LibrarianBorrows />} />
         <Route path="returns" element={<LibrarianReturns />} />
         <Route path="reservations" element={<LibrarianReservations />} />
+        <Route path="notifications" element={<LibrarianNotifications />} />
         <Route path="reports" element={<LibrarianReports />} />
         <Route path="profile" element={<LibrarianProfile />} />
       </Route>
