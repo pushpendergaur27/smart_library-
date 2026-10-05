@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { Container, Button, Form } from 'react-bootstrap';
 import { bookService } from '../../services/bookService';
 import { BOOK_GENRES } from '../../utils/constants';
@@ -21,7 +21,16 @@ const LibrarianBooks = () => {
   const [deleteBook, setDeleteBook] = useState(null);
   const [deleting, setDeleting] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
+  const [success, setSuccess] = useState('');
   const booksPerPage = 10;
+
+  useEffect(() => {
+    if (location.state?.success) {
+      setSuccess(location.state.success);
+      navigate('/librarian/books', { replace: true, state: null });
+    }
+  }, [location.state, navigate]);
 
   const fetchBooks = useCallback(async () => {
     setLoading(true);
@@ -75,6 +84,14 @@ const LibrarianBooks = () => {
       </div>
 
       {error && <AlertMessage variant="danger" message={error} />}
+      {success && (
+        <AlertMessage
+          variant="success"
+          message={success}
+          duration={6000}
+          onDismiss={() => setSuccess('')}
+        />
+      )}
 
       <div className="mb-3">
         <Form onSubmit={(e) => { e.preventDefault(); setCurrentPage(1); }}>

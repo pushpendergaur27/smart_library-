@@ -10,18 +10,22 @@ import java.util.Optional;
 public interface BookRepository extends JpaRepository<Book, Long> {
     Optional<Book> findByIsbn(String isbn);
 
+    List<Book> findAllByOrderByCreatedAtDescIdDesc();
+
     @Query("SELECT b FROM Book b WHERE " +
            "LOWER(b.title) LIKE LOWER(CONCAT('%', :query, '%')) OR " +
            "LOWER(b.author) LIKE LOWER(CONCAT('%', :query, '%')) OR " +
            "LOWER(b.isbn) LIKE LOWER(CONCAT('%', :query, '%')) OR " +
-           "LOWER(b.genre) LIKE LOWER(CONCAT('%', :query, '%'))")
+           "LOWER(b.genre) LIKE LOWER(CONCAT('%', :query, '%')) " +
+           "ORDER BY b.createdAt DESC, b.id DESC")
     List<Book> search(@Param("query") String query);
 
     @Query("SELECT b FROM Book b WHERE " +
            "(:title = '' OR LOWER(b.title) LIKE LOWER(CONCAT('%', :title, '%'))) AND " +
            "(:author = '' OR LOWER(b.author) LIKE LOWER(CONCAT('%', :author, '%'))) AND " +
            "(:isbn = '' OR b.isbn = :isbn) AND " +
-           "(:genre = '' OR LOWER(b.genre) = LOWER(:genre))")
+           "(:genre = '' OR LOWER(b.genre) = LOWER(:genre)) " +
+           "ORDER BY b.createdAt DESC, b.id DESC")
     List<Book> searchAdvanced(@Param("title") String title,
                                @Param("author") String author,
                                @Param("isbn") String isbn,

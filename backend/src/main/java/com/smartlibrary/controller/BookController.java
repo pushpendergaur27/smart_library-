@@ -10,6 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/books")
@@ -39,12 +40,18 @@ public class BookController {
         }
 
         int total = allBooks.size();
-        int start = page * size;
-        int end = Math.min(start + size, total);
-        if (start >= total) {
-            return ResponseEntity.ok(List.of());
-        }
-        return ResponseEntity.ok(allBooks.subList(start, end));
+        int safeSize = Math.max(1, size);
+        int start = Math.max(0, page) * safeSize;
+        List<BookResponse> content = start >= total
+                ? List.of()
+                : allBooks.subList(start, Math.min(start + safeSize, total));
+        int totalPages = Math.max(1, (int) Math.ceil(total / (double) safeSize));
+        return ResponseEntity.ok(Map.of(
+                "content", content,
+                "totalElements", total,
+                "totalPages", totalPages,
+                "number", Math.max(0, page),
+                "size", safeSize));
     }
 
     @GetMapping("/{id}")

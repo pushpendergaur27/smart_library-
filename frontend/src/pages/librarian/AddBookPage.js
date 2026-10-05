@@ -84,7 +84,7 @@ const AddBookPage = () => {
 
     try {
       await bookService.create(formData);
-      navigate('/librarian/books');
+      navigate('/librarian/books', { state: { success: `Book "${formData.title}" added successfully` } });
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to add book.');
     } finally {
