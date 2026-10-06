@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import React, { createContext, useContext, useState, useEffect } from 'react';
 import { authService } from '../services/authService';
 
 const AuthContext = createContext(null);
@@ -17,36 +17,40 @@ export const AuthProvider = ({ children }) => {
     return saved ? JSON.parse(saved) : null;
   });
   const [token, setToken] = useState(localStorage.getItem('jwtToken'));
-  const [loading, setLoading] = useState(true);
+  // Render instantly when a saved session exists; only block first paint when
+  // there is nothing to show yet (fresh visit without a stored user).
+  const [loading, setLoading] = useState(() => {
+    return !!(localStorage.getItem('jwtToken') && localStorage.getItem('user'));
+  });
 
-  const loadUser = useCallback(async () => {
-    if (token) {
+  useEffect(() => {
+    if (!token) {
+      setLoading(false);
+      return;
+    }
+    let cancelled = false;
+    (async () => {
       try {
         const userData = await authService.getMe();
-        setUser(userData);
-        localStorage.setItem('user', JSON.stringify(userData));
+        if (!cancelled) {
+          setUser(userData);
+          localStorage.setItem('user', JSON.stringify(userData));
+        }
       } catch (error) {
         console.error('Failed to load user:', error);
-        if (error.response?.status === 401) {
+        if (error.response?.status === 401 && !cancelled) {
           localStorage.removeItem('jwtToken');
           localStorage.removeItem('userRole');
           localStorage.removeItem('user');
           setToken(null);
           setUser(null);
-        } else if (!user) {
-          const saved = localStorage.getItem('user');
-          if (saved) {
-            setUser(JSON.parse(saved));
-          }
         }
+      } finally {
+        if (!cancelled) setLoading(false);
       }
-    }
-    setLoading(false);
+    })();
+    return () => { cancelled = true; };
   }, [token]);
-
-  useEffect(() => {
-    loadUser();
-  }, [loadUser]);
 
   const login = async (email, password) => {
     const response = await authService.login({ email, password });

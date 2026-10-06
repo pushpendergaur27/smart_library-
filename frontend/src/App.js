@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { Suspense, lazy } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
 
@@ -9,33 +9,33 @@ import LoadingSpinner from './components/LoadingSpinner';
 import StudentLayout from './layouts/StudentLayout';
 import LibrarianLayout from './layouts/LibrarianLayout';
 
-import Home from './pages/Home';
-import Login from './pages/Login';
-import Register from './pages/Register';
+const Home = lazy(() => import('./pages/Home'));
+const Login = lazy(() => import('./pages/Login'));
+const Register = lazy(() => import('./pages/Register'));
 
-import StudentDashboard from './pages/student/Dashboard';
-import StudentBooks from './pages/student/Books';
-import StudentBookDetail from './pages/student/BookDetail';
-import ScanBarcode from './pages/student/Scan';
-import BorrowedBooks from './pages/student/BorrowedBooks';
-import BorrowHistory from './pages/student/BorrowHistory';
-import StudentReservations from './pages/student/Reservations';
-import StudentNotifications from './pages/student/Notifications';
-import StudentProfile from './pages/student/Profile';
+const StudentDashboard = lazy(() => import('./pages/student/Dashboard'));
+const StudentBooks = lazy(() => import('./pages/student/Books'));
+const StudentBookDetail = lazy(() => import('./pages/student/BookDetail'));
+const ScanBarcode = lazy(() => import('./pages/student/Scan'));
+const BorrowedBooks = lazy(() => import('./pages/student/BorrowedBooks'));
+const BorrowHistory = lazy(() => import('./pages/student/BorrowHistory'));
+const StudentReservations = lazy(() => import('./pages/student/Reservations'));
+const StudentNotifications = lazy(() => import('./pages/student/Notifications'));
+const StudentProfile = lazy(() => import('./pages/student/Profile'));
 
-import LibrarianDashboard from './pages/librarian/Dashboard';
-import LibrarianBooks from './pages/librarian/BooksPage';
-import LibrarianAddBook from './pages/librarian/AddBookPage';
-import LibrarianEditBook from './pages/librarian/EditBookPage';
-import LibrarianBookDetails from './pages/librarian/BookDetailsPage';
-import LibrarianCopies from './pages/librarian/CopiesPage';
-import LibrarianStudents from './pages/librarian/StudentsPage';
-import LibrarianReturns from './pages/librarian/ReturnsPage';
-import LibrarianReservations from './pages/librarian/LibrarianReservations';
-import LibrarianReports from './pages/librarian/ReportsPage';
-import LibrarianProfile from './pages/librarian/LibrarianProfile';
-import LibrarianBorrows from './pages/librarian/BorrowsPage';
-import LibrarianNotifications from './pages/librarian/LibrarianNotificationsPage';
+const LibrarianDashboard = lazy(() => import('./pages/librarian/Dashboard'));
+const LibrarianBooks = lazy(() => import('./pages/librarian/BooksPage'));
+const LibrarianAddBook = lazy(() => import('./pages/librarian/AddBookPage'));
+const LibrarianEditBook = lazy(() => import('./pages/librarian/EditBookPage'));
+const LibrarianBookDetails = lazy(() => import('./pages/librarian/BookDetailsPage'));
+const LibrarianCopies = lazy(() => import('./pages/librarian/CopiesPage'));
+const LibrarianStudents = lazy(() => import('./pages/librarian/StudentsPage'));
+const LibrarianReturns = lazy(() => import('./pages/librarian/ReturnsPage'));
+const LibrarianReservations = lazy(() => import('./pages/librarian/LibrarianReservations'));
+const LibrarianReports = lazy(() => import('./pages/librarian/ReportsPage'));
+const LibrarianProfile = lazy(() => import('./pages/librarian/LibrarianProfile'));
+const LibrarianBorrows = lazy(() => import('./pages/librarian/BorrowsPage'));
+const LibrarianNotifications = lazy(() => import('./pages/librarian/LibrarianNotificationsPage'));
 
 const PublicRoute = ({ children }) => {
   const { isAuthenticated, user, loading } = useAuth();
@@ -53,7 +53,8 @@ function AppRoutes() {
   if (loading) return <LoadingSpinner fullPage message="Loading..." />;
 
   return (
-    <Routes>
+    <Suspense fallback={<LoadingSpinner fullPage message="Loading..." />}>
+      <Routes>
       {/* Public Routes */}
       <Route path="/" element={<Home />} />
       <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
@@ -105,7 +106,8 @@ function AppRoutes() {
 
       {/* Catch all */}
       <Route path="*" element={<Navigate to="/" replace />} />
-    </Routes>
+      </Routes>
+    </Suspense>
   );
 }
 
