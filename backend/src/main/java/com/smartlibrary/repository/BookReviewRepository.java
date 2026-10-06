@@ -22,4 +22,7 @@ public interface BookReviewRepository extends JpaRepository<BookReview, Long> {
 
     @Query("SELECT r FROM BookReview r JOIN FETCH r.book b JOIN FETCH r.student s")
     List<BookReview> findAllWithBookAndStudent();
+
+    @Query("SELECT r.book.id, AVG(r.rating), COUNT(r) FROM BookReview r GROUP BY r.book.id")
+    List<Object[]> findRatingSummaries();
 }

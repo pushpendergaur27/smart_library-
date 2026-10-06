@@ -5,6 +5,7 @@ import { AuthProvider, useAuth } from './context/AuthContext';
 import AppNavbar from './components/AppNavbar';
 import ProtectedRoute from './components/ProtectedRoute';
 import LoadingSpinner from './components/LoadingSpinner';
+import Chatbot from './components/Chatbot';
 
 import StudentLayout from './layouts/StudentLayout';
 import LibrarianLayout from './layouts/LibrarianLayout';
@@ -117,6 +118,7 @@ function App() {
       <Router>
         <AppNavbar />
         <AppRoutes />
+        <Chatbot />
       </Router>
     </AuthProvider>
   );
