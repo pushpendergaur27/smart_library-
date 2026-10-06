@@ -1,4 +1,4 @@
-name: Keep Server Alive
+name: Keep Render API awake
 
 on:
   schedule:
@@ -9,6 +9,12 @@ jobs:
   ping:
     runs-on: ubuntu-latest
     steps:
-      - name: Ping server
+      - name: Wake up Render backend
         run: |
-          curl -s -o /dev/null -w "%{http_code}" https://smart-library-fq4q.onrender.com/api/books || true
+          echo "Pinging Render to prevent free-tier sleep..."
+          code=$(curl -s -o /dev/null -w '%{http_code}' --max-time 90 "https://smart-library-fq4q.onrender.com/api/books")
+          echo "Render responded with HTTP $code"
+          if [ "$code" != "200" ]; then
+            echo "Render did not respond with 200 - backend may be down"
+            exit 1
+          fi
